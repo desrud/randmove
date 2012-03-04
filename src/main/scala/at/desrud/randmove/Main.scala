@@ -66,10 +66,8 @@ object DLAProcessor3 extends Processor {
         val next = DLALib.randMove(current)
         if (points.contains(next)) {
           points += current
-          println(n + ": " + current)
 
           maxRadius = math.max(maxRadius, abs(current))
-          println("maxRadius = " + maxRadius)
 
           n += 1
           cont = false
