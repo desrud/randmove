@@ -29,6 +29,15 @@ object DLALib {
     }
     fw.close
   }
+
+  def generateGnuplotFile(fileName: String) =   {
+    val gpFile = fileName + ".gp"
+    val fw = new java.io.FileWriter(gpFile)
+    fw.write("set terminal png\n")
+    fw.write("set output \"" + fileName + ".png" + "\"\n")
+    fw.write("plot [-100:100][-100:100] \"" + fileName + "\"\n")
+    fw.close
+  }
 }
 
 trait Processor {
@@ -102,14 +111,19 @@ object Executor {
     val step = n / numSnapshots
     var set = init
 
-    //TODO some points missing?
+    var allFiles: List[String] = Nil
+
     for (i <- 1 to numSnapshots) {
       val iter = i * step
-      set = processor.process(step, set)
-      DLALib.printRes(set, "/tmp/file" + i)
+      set = processor.process(step, set)//TODO some points missing?
+      val fileName = "/tmp/file" + "%05d".format(i)
+      DLALib.printRes(set, fileName)
+      DLALib.generateGnuplotFile(fileName)
+      allFiles ::= fileName
     }
+
+   allFiles.reverse.foreach(x => println("gnuplot " + x + ".gp"))
   }
 }
 
-//TODO show some growth => snapshots
 //TODO initial box => need other startpoint algorithm and other break condition
