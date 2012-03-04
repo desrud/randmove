@@ -1,0 +1,7 @@
+target
+.scala_dependencies
+*.db
+*.lock
+.cache
+lib_managed
+project/boot
