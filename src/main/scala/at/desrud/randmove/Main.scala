@@ -133,13 +133,11 @@ object DLAProcessor3 extends Processor {
   }
 
   var START_OFFSET = 3
-  var MAX_ITER = 1000
   var TIMEOUT = 10000L
 
   def process(target: Int) = {
     var maxRadius = 0.0
     val startTime = System.currentTimeMillis
-
 
     val points: Set[(Int, Int)] = Set((0, 0))
 
@@ -153,9 +151,7 @@ object DLAProcessor3 extends Processor {
 
       //new particles will be generated at maxRadius + 1 using random phi
       var current = randomPoint(maxRadius + START_OFFSET)
-      println("newpoint: " + current)
 
-      var tmpCnt = 0
       var cont = true
       //randomly move until some max occured or crash with cluster
       while (cont) {
@@ -172,8 +168,6 @@ object DLAProcessor3 extends Processor {
           println(next)
         } else {
           current = next
-          tmpCnt += 1
-          if (tmpCnt > MAX_ITER) cont = false
           if (abs(current) > (1.5 * maxRadius) + 3) cont = false
         }
       }
@@ -195,7 +189,3 @@ object Executor {
   var processor: Processor = DLAProcessor3
   def doAll(n: Int) = printRes(processor.process(n), "/tmp/file" + n)
 }
-
-//TODO from where should be released => (size + 3, 0)
-
-
