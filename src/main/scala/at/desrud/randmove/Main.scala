@@ -94,7 +94,21 @@ object DLAProcessor3 extends Processor {
 
 object Executor {
   var processor: Processor = DLAProcessor3
+
+  val set = Set((0, 0))
   def doAll(n: Int) = DLALib.printRes(processor.process(n), "/tmp/file" + n)
+
+  def doAll(n: Int, numSnapshots: Int, init: Set[(Int, Int)] = Set((0, 0))) {
+    val step = n / numSnapshots
+    var set = init
+
+    //TODO some points missing?
+    for (i <- 1 to numSnapshots) {
+      val iter = i * step
+      set = processor.process(step, set)
+      DLALib.printRes(set, "/tmp/file" + i)
+    }
+  }
 }
 
 //TODO show some growth => snapshots
