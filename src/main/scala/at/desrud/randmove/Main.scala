@@ -41,7 +41,7 @@ object DLAProcessor3 extends Processor {
   }
 
   var START_OFFSET = 3
-  var TIMEOUT = 10000L
+  var TIMEOUT = 120000L
 
   def process(target: Int) = {
     var maxRadius = 0.0
