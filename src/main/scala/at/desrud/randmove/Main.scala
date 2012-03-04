@@ -21,6 +21,14 @@ object DLALib {
     val d = randDir
     (p._1 + d._1, p._2 + d._2)
   }
+
+  def printRes(points: Set[(Int, Int)], fileName: String) = {
+    val fw = new java.io.FileWriter(fileName)
+    for (point <- points) {
+      fw.write(point._1 + " " + point._2 + "\n")
+    }
+    fw.close
+  }
 }
 
 trait Processor {
@@ -85,14 +93,9 @@ object DLAProcessor3 extends Processor {
 }
 
 object Executor {
-  def printRes(points: Set[(Int, Int)], fileName: String) = {
-    val fw = new java.io.FileWriter(fileName)
-    for (point <- points) {
-      fw.write(point._1 + " " + point._2 + "\n")
-    }
-    fw.close
-  }
-
   var processor: Processor = DLAProcessor3
-  def doAll(n: Int) = printRes(processor.process(n), "/tmp/file" + n)
+  def doAll(n: Int) = DLALib.printRes(processor.process(n), "/tmp/file" + n)
 }
+
+//TODO show some growth => snapshots
+//TODO initial box => need other startpoint algorithm and other break condition
