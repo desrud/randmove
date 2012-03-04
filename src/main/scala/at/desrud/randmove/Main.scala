@@ -38,6 +38,15 @@ object DLALib {
     fw.write("plot [-100:100][-100:100] \"" + fileName + "\"\n")
     fw.close
   }
+
+  def generateAnimationScript(fileName: String, animation: String, files:List[String]) {
+    val fw = new java.io.FileWriter(fileName)
+
+    files.foreach(x => fw.write("gnuplot " + x + ".gp\n"))
+    fw.write("convert -delay 20 *.png " + animation)
+
+    fw.close
+  }
 }
 
 trait Processor {
@@ -122,7 +131,7 @@ object Executor {
       allFiles ::= fileName
     }
 
-   allFiles.reverse.foreach(x => println("gnuplot " + x + ".gp"))
+    DLALib.generateAnimationScript("/tmp/animate", "/tmp/ani.gif", allFiles.reverse)
   }
 }
 
