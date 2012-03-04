@@ -24,7 +24,8 @@ object DLALib {
 }
 
 trait Processor {
-  def process(target: Int): Set[(Int, Int)]
+  def process(target: Int): Set[(Int, Int)] = process(target, Set((0, 0)))
+  def process(target: Int, initial: Set[(Int, Int)]): Set[(Int, Int)]
 }
 
 object DLAProcessor3 extends Processor {
@@ -43,11 +44,11 @@ object DLAProcessor3 extends Processor {
   var START_OFFSET = 3
   var TIMEOUT = 120000L
 
-  def process(target: Int) = {
+  def process(target: Int, initial: Set[(Int, Int)]) = {
     var maxRadius = 0.0
     val startTime = System.currentTimeMillis
 
-    val points: Set[(Int, Int)] = Set((0, 0))
+    val points: Set[(Int, Int)] = Set() ++ initial
 
     var n = 0
     while(n < target) {
