@@ -11,6 +11,8 @@ object Main {
 }
 
 object DLALib {
+  var animationDelay = 40
+
   val directions = (for (i <- -1 to 1; j <- -1 to 1; if !(i == 0 && j == 0)) yield (i, j)).toArray[(Int, Int)]
   val size = directions.size
   def randDir = {
@@ -48,7 +50,7 @@ object DLALib {
     val fw = new java.io.FileWriter(fileName)
 
     files.foreach(x => fw.write("gnuplot " + x + ".gp\n"))
-    fw.write("convert -delay 20 *.png " + animation)
+    fw.write("convert -delay " + animationDelay + " *.png " + animation)//TODO *.png might not be the best choice
 
     fw.close
   }
