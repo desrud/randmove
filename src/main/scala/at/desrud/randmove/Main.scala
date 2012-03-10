@@ -80,45 +80,45 @@ object DLAProcessor extends Processor {
   var TIMEOUT = 120000L
 
   def process(target: Int, initial: Set[(Int, Int)]) = {
-    var maxRadius = initial.map(abs(_)).max
+    var maxRadius = initial.map(abs(_)).max//TODO can get rid of this?
     val startTime = System.currentTimeMillis
+    val points: Set[(Int, Int)] = Set() ++ initial//TODO can get rid of this?
 
-    val points: Set[(Int, Int)] = Set() ++ initial
-
-    var n = 0
-    while(n < target) {//TODO bad
-
-      if (System.currentTimeMillis - startTime > TIMEOUT) {
-        println("timeout ... at n = " + n)
-        n = target//TODO very bad
-      }
-
-      //randomly movement until crash with cluster or too far away
-      @tailrec
-      def randomMovement(point: (Int, Int)): Option[(Int, Int)] = {
-        val next = DLALib.randMove(point)
-        if (points.contains(next)) {
-          Some(point)
-        } else if (abs(next) > (1.5 * maxRadius) + 5) {
-          None
-        } else {
-          randomMovement(next)
-        }
-      }
-
-      //new particles will be generated at maxRadius + some offset using random phi
-      val randPoint = randomPoint(maxRadius + START_OFFSET)
-      val nextPoint = randomMovement(randPoint)
-      nextPoint match {
-        case Some(point) =>
-          maxRadius = math.max(maxRadius, abs(point))
-          points += point
-          n += 1
-        case None => None
+    //randomly movement until crash with cluster or too far away
+    @tailrec
+    def randomMovement(point: (Int, Int)): Option[(Int, Int)] = {
+      val next = DLALib.randMove(point)
+      if (points.contains(next)) {
+        Some(point)
+      } else if (abs(next) > (1.5 * maxRadius) + 5) {
+        None
+      } else {
+        randomMovement(next)
       }
     }
 
-    points
+    @tailrec
+    def calculate(pointsLeft: Int): Set[(Int, Int)] = {
+      if (pointsLeft == 0) {
+        points
+      } else if (System.currentTimeMillis - startTime > TIMEOUT) {
+        println("timeout ... skipping = " + pointsLeft + " points")
+        points
+      } else {
+        //new particles will be generated at maxRadius + some offset using random phi
+        val randPoint = randomPoint(maxRadius + START_OFFSET)
+        val nextPoint = randomMovement(randPoint)
+        nextPoint match {
+          case Some(point) =>
+            maxRadius = math.max(maxRadius, abs(point))
+            points += point
+            calculate(pointsLeft - 1)
+          case None => calculate(pointsLeft)
+        }
+      }
+    }
+
+    calculate(target)
   }
 }
 
@@ -136,10 +136,11 @@ object Executor {
     var allFiles: List[String] = Nil
 
     for (i <- 1 to numSnapshots) {
-      set = processor.process(step, set)//TODO some points missing?
+      set = processor.process(step, set)
       val fileName = "/tmp/file" + "%05d".format(i)
       DLALib.printPoints(set, fileName)
       DLALib.generateGnuplotFile(fileName, plotSize, set.size)
+      println("generated " + fileName)
       allFiles ::= fileName
     }
 
