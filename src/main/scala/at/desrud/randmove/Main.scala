@@ -6,8 +6,23 @@ import scala.annotation.tailrec
 
 object Main {
 
+  val DEFAULT_NUM_ITERATIONS = 10000
+  val DEFAULT_NUM_FILES = 20
+
   def main(args: Array[String]): Unit = {
-    println("move")
+    val numIterations = (if (args.length > 0) tryParseInt(args(0)) else None).getOrElse(DEFAULT_NUM_ITERATIONS)
+    val numFiles = (if (args.length > 1) tryParseInt(args(1)) else None).getOrElse(DEFAULT_NUM_FILES)
+
+    println("processing " + numIterations + " iterations, generating " + numFiles + " snapshot files")
+    Executor.doAll(numIterations, numFiles)
+  }
+
+  def tryParseInt(x: String) = {
+    try  {
+      Some(x.toInt)
+    } catch {
+      case e: NumberFormatException => None
+    }
   }
 }
 
