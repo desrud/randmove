@@ -24,7 +24,7 @@ object DLALib {
     (pnt._1 + diff._1, pnt._2 + diff._2)
   }
 
-  def printRes(points: Set[(Int, Int)], fileName: String) = {
+  def printPoints(points: Set[(Int, Int)], fileName: String) = {
     val fw = new java.io.FileWriter(fileName)
     for (point <- points) {
       fw.write(point._1 + " " + point._2 + "\n")
@@ -50,7 +50,8 @@ object DLALib {
     val fw = new java.io.FileWriter(fileName)
 
     files.foreach(x => fw.write("gnuplot " + x + ".gp\n"))
-    fw.write("convert -delay " + animationDelay + " *.png " + animation)//TODO *.png might not be the best choice
+    val filesToAnimate = files.map(_ + ".png").mkString(" ")
+    fw.write("convert -delay " + animationDelay + " " + filesToAnimate + " " + animation + "\n")
 
     fw.close
   }
@@ -122,7 +123,7 @@ object Executor {
   var plotSize = 200
 
   val set = Set((0, 0))
-  def doAll(n: Int) = DLALib.printRes(processor.process(n), "/tmp/file" + n)
+  def doAll(n: Int) = DLALib.printPoints(processor.process(n), "/tmp/file" + n)
 
   def doAll(numIterations: Int, numSnapshots: Int, init: Set[(Int, Int)] = Set((0, 0))) {
     val step = numIterations / numSnapshots
@@ -133,7 +134,7 @@ object Executor {
     for (i <- 1 to numSnapshots) {
       set = processor.process(step, set)//TODO some points missing?
       val fileName = "/tmp/file" + "%05d".format(i)
-      DLALib.printRes(set, fileName)
+      DLALib.printPoints(set, fileName)
       DLALib.generateGnuplotFile(fileName, plotSize, set.size)
       allFiles ::= fileName
     }
@@ -141,5 +142,3 @@ object Executor {
     DLALib.generateAnimationScript("/tmp/animate", "/tmp/ani.gif", allFiles.reverse)
   }
 }
-
-//TODO initial box => need other startpoint algorithm and other break condition
