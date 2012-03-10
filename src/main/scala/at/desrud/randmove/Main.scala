@@ -137,13 +137,13 @@ object DLAProcessor extends Processor {
 object Executor {
   var PROCESSOR: Processor = DLAProcessor
   var PLOT_SIZE = 200
-  var FILE_PREFIX = "/tmp/file"
+  var OUTPUT_DIR = "/tmp/"
 
-  def doAll(n: Int) = FileLib.printPoints(PROCESSOR.process(n), "/tmp/file" + n)
+  def doAll(n: Int) = FileLib.printPoints(PROCESSOR.process(n), OUTPUT_DIR + "file" + n)
 
   def doAll(numIterations: Int, numSnapshots: Int, init: Set[(Int, Int)] = Set((0, 0))) {
     val stepSize = numIterations / numSnapshots
-    val targetFilesNames = for (i <- 1 to numSnapshots) yield FILE_PREFIX + "%05d".format(i)
+    val targetFilesNames = for (i <- 1 to numSnapshots) yield OUTPUT_DIR + "file" + "%05d".format(i)
 
     def oneStep(set: Set[(Int, Int)], fileName: String): Set[(Int, Int)] = {
       val out = PROCESSOR.process(stepSize, set)
@@ -154,6 +154,6 @@ object Executor {
     }
 
     targetFilesNames.foldLeft(init)(oneStep)
-    FileLib.generateAnimationScript("/tmp/animate", "/tmp/ani.gif", targetFilesNames.toList)
+    FileLib.generateAnimationScript(OUTPUT_DIR + "animate.sh", OUTPUT_DIR + "animation.gif", targetFilesNames.toList)
   }
 }
