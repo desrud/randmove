@@ -11,7 +11,7 @@ object Main {
 }
 
 object DLALib {
-  val directions = List((1, 0), (0, 1), (1, 1), (1, -1), (-1, 0), (-1, 1), (-1, -1), (0, -1)).toArray[(Int, Int)]
+  val directions = (for (i <- -1 to 1; j <- -1 to 1; if !(i == 0 && j == 0)) yield (i, j)).toArray[(Int, Int)]
   val size = directions.size
   def randDir = {
     directions(Random.nextInt(size))
@@ -116,8 +116,8 @@ object Executor {
   val set = Set((0, 0))
   def doAll(n: Int) = DLALib.printRes(processor.process(n), "/tmp/file" + n)
 
-  def doAll(n: Int, numSnapshots: Int, init: Set[(Int, Int)] = Set((0, 0))) {
-    val step = n / numSnapshots
+  def doAll(numIterations: Int, numSnapshots: Int, init: Set[(Int, Int)] = Set((0, 0))) {
+    val step = numIterations / numSnapshots
     var set = init
 
     var allFiles: List[String] = Nil
