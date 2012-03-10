@@ -82,25 +82,24 @@ object DLAProcessor extends Processor {
   }
 
   def process(target: Int, initial: Set[(Int, Int)]) = {
-    var maxRadius = initial.map(abs(_)).max//TODO can get rid of this?
     val startTime = System.currentTimeMillis
     val points: Set[(Int, Int)] = Set() ++ initial//TODO can get rid of this?
 
     //random movement until crash with cluster or too far away
     @tailrec
-    def randomMovement(point: (Int, Int)): Option[(Int, Int)] = {
+    def randomMovement(point: (Int, Int), maxRadius: Double): Option[(Int, Int)] = {
       val next = DLALib.randMove(point)
       if (points.contains(next)) {
         Some(point)
       } else if (abs(next) > (1.5 * maxRadius) + 5) {
         None
       } else {
-        randomMovement(next)
+        randomMovement(next, maxRadius)
       }
     }
 
     @tailrec
-    def calculate(pointsLeft: Int): Set[(Int, Int)] = {
+    def calculate(pointsLeft: Int, maxRadius: Double): Set[(Int, Int)] = {
       if (pointsLeft == 0) {
         points
       } else if (System.currentTimeMillis - startTime > TIMEOUT) {
@@ -109,18 +108,17 @@ object DLAProcessor extends Processor {
       } else {
         //new particles will be generated at maxRadius + some offset using random phi
         val randPoint = randomPoint(maxRadius + START_OFFSET)
-        val nextPoint = randomMovement(randPoint)
+        val nextPoint = randomMovement(randPoint, maxRadius)
         nextPoint match {
           case Some(point) =>
-            maxRadius = math.max(maxRadius, abs(point))
             points += point
-            calculate(pointsLeft - 1)
-          case None => calculate(pointsLeft)
+            calculate(pointsLeft - 1, math.max(maxRadius, abs(point)))
+          case None => calculate(pointsLeft, maxRadius)
         }
       }
     }
 
-    calculate(target)
+    calculate(target, initial.map(abs(_)).max)
   }
 }
 
