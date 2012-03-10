@@ -12,18 +12,21 @@ object Main {
 }
 
 object DLALib {
-  var animationDelay = 40
-
   val directions = (for (i <- -1 to 1; j <- -1 to 1; if !(i == 0 && j == 0)) yield (i, j)).toArray[(Int, Int)]
-  val size = directions.size
+  val numDirections = directions.size
+
   def randDir = {
-    directions(Random.nextInt(size))
+    directions(Random.nextInt(numDirections))
   }
 
   def randMove(pnt: (Int, Int)) = {
     val diff = randDir
     (pnt._1 + diff._1, pnt._2 + diff._2)
   }
+}
+
+object FileLib {
+  var ANIMATION_DELAY = 40
 
   def printPoints(points: Set[(Int, Int)], fileName: String) = {
     val fw = new java.io.FileWriter(fileName)
@@ -52,7 +55,7 @@ object DLALib {
 
     files.foreach(x => fw.write("gnuplot " + x + ".gp\n"))
     val filesToAnimate = files.map(_ + ".png").mkString(" ")
-    fw.write("convert -delay " + animationDelay + " " + filesToAnimate + " " + animation + "\n")
+    fw.write("convert -delay " + ANIMATION_DELAY + " " + filesToAnimate + " " + animation + "\n")
 
     fw.close
   }
@@ -64,6 +67,8 @@ trait Processor {
 }
 
 object DLAProcessor extends Processor {
+  var START_OFFSET = 3
+  var TIMEOUT = 120000L
 
   def abs(x: (Int, Int)) = {
     math.sqrt((x._1 * x._1 + x._2 * x._2).toDouble)
@@ -76,15 +81,12 @@ object DLAProcessor extends Processor {
     (x.toInt, y.toInt)
   }
 
-  var START_OFFSET = 3
-  var TIMEOUT = 120000L
-
   def process(target: Int, initial: Set[(Int, Int)]) = {
     var maxRadius = initial.map(abs(_)).max//TODO can get rid of this?
     val startTime = System.currentTimeMillis
     val points: Set[(Int, Int)] = Set() ++ initial//TODO can get rid of this?
 
-    //randomly movement until crash with cluster or too far away
+    //random movement until crash with cluster or too far away
     @tailrec
     def randomMovement(point: (Int, Int)): Option[(Int, Int)] = {
       val next = DLALib.randMove(point)
@@ -102,7 +104,7 @@ object DLAProcessor extends Processor {
       if (pointsLeft == 0) {
         points
       } else if (System.currentTimeMillis - startTime > TIMEOUT) {
-        println("timeout ... skipping = " + pointsLeft + " points")
+        println("timeout ... skipping " + pointsLeft + " points")
         points
       } else {
         //new particles will be generated at maxRadius + some offset using random phi
@@ -123,27 +125,25 @@ object DLAProcessor extends Processor {
 }
 
 object Executor {
-  var processor: Processor = DLAProcessor
-  var plotSize = 200
+  var PROCESSOR: Processor = DLAProcessor
+  var PLOT_SIZE = 200
+  var FILE_PREFIX = "/tmp/file"
 
-  val set = Set((0, 0))
-  def doAll(n: Int) = DLALib.printPoints(processor.process(n), "/tmp/file" + n)
+  def doAll(n: Int) = FileLib.printPoints(PROCESSOR.process(n), "/tmp/file" + n)
 
   def doAll(numIterations: Int, numSnapshots: Int, init: Set[(Int, Int)] = Set((0, 0))) {
-    val step = numIterations / numSnapshots
-    var set = init
+    val stepSize = numIterations / numSnapshots
+    val targetFilesNames = for (i <- 1 to numSnapshots) yield FILE_PREFIX + "%05d".format(i)
 
-    var allFiles: List[String] = Nil
-
-    for (i <- 1 to numSnapshots) {
-      set = processor.process(step, set)
-      val fileName = "/tmp/file" + "%05d".format(i)
-      DLALib.printPoints(set, fileName)
-      DLALib.generateGnuplotFile(fileName, plotSize, set.size)
+    def oneStep(set: Set[(Int, Int)], fileName: String): Set[(Int, Int)] = {
+      val out = PROCESSOR.process(stepSize, set)
+      FileLib.printPoints(out, fileName)
+      FileLib.generateGnuplotFile(fileName, PLOT_SIZE, out.size)
       println("generated " + fileName)
-      allFiles ::= fileName
+      out
     }
 
-    DLALib.generateAnimationScript("/tmp/animate", "/tmp/ani.gif", allFiles.reverse)
+    targetFilesNames.foldLeft(init)(oneStep)
+    FileLib.generateAnimationScript("/tmp/animate", "/tmp/ani.gif", targetFilesNames.toList)
   }
 }
