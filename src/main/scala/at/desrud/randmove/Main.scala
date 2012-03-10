@@ -80,7 +80,7 @@ object DLAProcessor extends Processor {
   var TIMEOUT = 120000L
 
   def process(target: Int, initial: Set[(Int, Int)]) = {
-    var maxRadius = 0.0
+    var maxRadius = initial.map(abs(_)).max
     val startTime = System.currentTimeMillis
 
     val points: Set[(Int, Int)] = Set() ++ initial
@@ -107,7 +107,8 @@ object DLAProcessor extends Processor {
       }
 
       //new particles will be generated at maxRadius + some offset using random phi
-      val nextPoint = randomMovement(randomPoint(maxRadius + START_OFFSET))
+      val randPoint = randomPoint(maxRadius + START_OFFSET)
+      val nextPoint = randomMovement(randPoint)
       nextPoint match {
         case Some(point) =>
           maxRadius = math.max(maxRadius, abs(point))
