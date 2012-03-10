@@ -17,9 +17,9 @@ object DLALib {
     directions(Random.nextInt(size))
   }
 
-  def randMove(p: (Int, Int)) = {
-    val d = randDir
-    (p._1 + d._1, p._2 + d._2)
+  def randMove(pnt: (Int, Int)) = {
+    val diff = randDir
+    (pnt._1 + diff._1, pnt._2 + diff._2)
   }
 
   def printRes(points: Set[(Int, Int)], fileName: String) = {
@@ -30,12 +30,17 @@ object DLALib {
     fw.close
   }
 
-  def generateGnuplotFile(fileName: String) =   {
+  def generateGnuplotFile(fileName: String, size: Int, numPoints: Int) =   {
+    val plotRangeX = "[" + (-size) + ":" + size + "]"
+    val plotRangeY = plotRangeX
+    val title = "title \"n = " + numPoints + "\""
+    val fileSize = 2 * size + 1
+
     val gpFile = fileName + ".gp"
     val fw = new java.io.FileWriter(gpFile)
-    fw.write("set terminal png\n")
+    fw.write("set terminal png size " + fileSize + "," + fileSize + "\n")
     fw.write("set output \"" + fileName + ".png" + "\"\n")
-    fw.write("plot [-100:100][-100:100] \"" + fileName + "\"\n")
+    fw.write("plot " + plotRangeX + plotRangeY + " \"" + fileName + "\" " + title + " with dots\n")
     fw.close
   }
 
@@ -54,7 +59,7 @@ trait Processor {
   def process(target: Int, initial: Set[(Int, Int)]): Set[(Int, Int)]
 }
 
-object DLAProcessor3 extends Processor {
+object DLAProcessor extends Processor {
 
   def abs(x: (Int, Int)) = {
     math.sqrt((x._1 * x._1 + x._2 * x._2).toDouble)
@@ -77,11 +82,11 @@ object DLAProcessor3 extends Processor {
     val points: Set[(Int, Int)] = Set() ++ initial
 
     var n = 0
-    while(n < target) {
+    while(n < target) {//TODO bad
 
       if (System.currentTimeMillis - startTime > TIMEOUT) {
         println("timeout ... at n = " + n)
-        n = target
+        n = target//TODO very bad
       }
 
       //new particles will be generated at maxRadius + 1 using random phi
@@ -111,7 +116,8 @@ object DLAProcessor3 extends Processor {
 }
 
 object Executor {
-  var processor: Processor = DLAProcessor3
+  var processor: Processor = DLAProcessor
+  var plotSize = 200
 
   val set = Set((0, 0))
   def doAll(n: Int) = DLALib.printRes(processor.process(n), "/tmp/file" + n)
@@ -123,11 +129,10 @@ object Executor {
     var allFiles: List[String] = Nil
 
     for (i <- 1 to numSnapshots) {
-      val iter = i * step
       set = processor.process(step, set)//TODO some points missing?
       val fileName = "/tmp/file" + "%05d".format(i)
       DLALib.printRes(set, fileName)
-      DLALib.generateGnuplotFile(fileName)
+      DLALib.generateGnuplotFile(fileName, plotSize, set.size)
       allFiles ::= fileName
     }
 
