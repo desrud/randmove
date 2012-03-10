@@ -2,6 +2,7 @@ package at.desrud.randmove
 
 import collection.mutable.Set
 import util.Random
+import scala.annotation.tailrec
 
 object Main {
 
@@ -92,25 +93,27 @@ object DLAProcessor extends Processor {
         n = target//TODO very bad
       }
 
-      //new particles will be generated at maxRadius + 1 using random phi
-      var current = randomPoint(maxRadius + START_OFFSET)
-
-      var cont = true
-      //randomly move until some max occured or crash with cluster
-      while (cont) {
-        val next = DLALib.randMove(current)
+      //randomly movement until crash with cluster or too far away
+      @tailrec
+      def randomMovement(point: (Int, Int)): Option[(Int, Int)] = {
+        val next = DLALib.randMove(point)
         if (points.contains(next)) {
-          points += current
-
-          maxRadius = math.max(maxRadius, abs(current))
-
-          n += 1
-          cont = false
-          println(next)
+          Some(point)
+        } else if (abs(next) > (1.5 * maxRadius) + 5) {
+          None
         } else {
-          current = next
-          if (abs(current) > (1.5 * maxRadius) + 3) cont = false
+          randomMovement(next)
         }
+      }
+
+      //new particles will be generated at maxRadius + some offset using random phi
+      val nextPoint = randomMovement(randomPoint(maxRadius + START_OFFSET))
+      nextPoint match {
+        case Some(point) =>
+          maxRadius = math.max(maxRadius, abs(point))
+          points += point
+          n += 1
+        case None => None
       }
     }
 
