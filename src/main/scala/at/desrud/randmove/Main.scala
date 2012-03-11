@@ -106,11 +106,11 @@ object Executor {
   def generateDLA(n: Int) = FileLib.printPoints(PROCESSOR.process(n), OUTPUT_DIR + "file" + n)
 
   def generateAnimation(numIterations: Int, numSnapshots: Int, initalSet: Set[(Int, Int)] = Set((0, 0))) {
-    val stepSize = numIterations / numSnapshots
-    val targetFilesNames = for (i <- 1 to numSnapshots) yield OUTPUT_DIR + "file" + "%05d".format(i)
+    val iterationsPerStep = numIterations / numSnapshots
+    val targetFilesNames = (1 to numSnapshots).map(OUTPUT_DIR + "file" + "%05d".format(_))
 
     def oneStep(set: Set[(Int, Int)], fileName: String): Set[(Int, Int)] = {
-      val out = PROCESSOR.process(stepSize, set)
+      val out = PROCESSOR.process(iterationsPerStep, set)
       FileLib.printPoints(out, fileName)
       FileLib.generateGnuplotFile(fileName, PLOT_SIZE, out.size)
       println("generated " + fileName)

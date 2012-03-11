@@ -7,9 +7,7 @@ object FileLib {
 
   def printPoints(points: Set[(Int, Int)], fileName: String) = {
     val fw = new java.io.FileWriter(fileName)
-    for (point <- points) {
-      fw.write(point._1 + " " + point._2 + "\n")
-    }
+    points.foreach(point => fw.write(point._1 + " " + point._2 + "\n"))
     fw.close
   }
 
