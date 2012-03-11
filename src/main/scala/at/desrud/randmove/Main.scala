@@ -60,7 +60,7 @@ object DLAProcessor extends Processor {
     (x.toInt, y.toInt)
   }
 
-  def process(target: Int, initial: Set[(Int, Int)]) = {
+  def process(numTotalPoints: Int, initial: Set[(Int, Int)]) = {
     val startTime = System.currentTimeMillis
 
     //random movement until crash with cluster or too far away
@@ -94,7 +94,7 @@ object DLAProcessor extends Processor {
       }
     }
 
-    calculate(target, Set() ++ initial, initial.map(abs(_)).max)
+    calculate(numTotalPoints, Set() ++ initial, initial.map(abs(_)).max)
   }
 }
 
