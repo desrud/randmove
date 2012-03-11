@@ -105,7 +105,7 @@ object Executor {
 
   def generateDLA(n: Int) = FileLib.printPoints(PROCESSOR.process(n), OUTPUT_DIR + "file" + n)
 
-  def generateAnimation(numIterations: Int, numSnapshots: Int, init: Set[(Int, Int)] = Set((0, 0))) {
+  def generateAnimation(numIterations: Int, numSnapshots: Int, initalSet: Set[(Int, Int)] = Set((0, 0))) {
     val stepSize = numIterations / numSnapshots
     val targetFilesNames = for (i <- 1 to numSnapshots) yield OUTPUT_DIR + "file" + "%05d".format(i)
 
@@ -117,7 +117,7 @@ object Executor {
       out
     }
 
-    targetFilesNames.foldLeft(init)(oneStep)
+    targetFilesNames.foldLeft(initalSet)(oneStep)
     FileLib.generateAnimationScript(OUTPUT_DIR + "animate.sh", OUTPUT_DIR + "animation.gif", targetFilesNames.toList)
   }
 }
