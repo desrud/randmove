@@ -38,16 +38,6 @@ object DLALib {
     val diff = randDir
     (pnt._1 + diff._1, pnt._2 + diff._2)
   }
-}
-
-trait Processor {
-  def process(target: Int): Set[(Int, Int)] = process(target, Set((0, 0)))
-  def process(target: Int, initial: Set[(Int, Int)]): Set[(Int, Int)]
-}
-
-object DLAProcessor extends Processor {
-  var START_OFFSET = 3
-  var TIMEOUT = 120000L
 
   def abs(x: (Int, Int)) = {
     math.sqrt((x._1 * x._1 + x._2 * x._2).toDouble)
@@ -59,6 +49,16 @@ object DLAProcessor extends Processor {
     val y = r * math.sin(phi)
     (x.toInt, y.toInt)
   }
+}
+
+trait Processor {
+  def process(target: Int): Set[(Int, Int)] = process(target, Set((0, 0)))
+  def process(target: Int, initial: Set[(Int, Int)]): Set[(Int, Int)]
+}
+
+object DLAProcessor extends Processor {
+  var START_OFFSET = 3
+  var TIMEOUT = 120000L
 
   def process(numTotalPoints: Int, initial: Set[(Int, Int)]) = {
     val startTime = System.currentTimeMillis
@@ -69,7 +69,7 @@ object DLAProcessor extends Processor {
       val next = DLALib.randMove(point)
       if (points.contains(next)) {
         Some(point)
-      } else if (abs(next) > (1.5 * maxRadius) + 5) {
+      } else if (DLALib.abs(next) > (1.5 * maxRadius) + 5) {
         None
       } else {
         randomMovement(next, points, maxRadius)
@@ -85,16 +85,16 @@ object DLAProcessor extends Processor {
         points
       } else {
         //new particles will be generated at maxRadius + some offset using random phi
-        val randPoint = randomPoint(maxRadius + START_OFFSET)
+        val randPoint = DLALib.randomPoint(maxRadius + START_OFFSET)
         val nextPoint = randomMovement(randPoint, points, maxRadius)
         nextPoint match {
-          case Some(point) => calculate(pointsLeft - 1, points += point, math.max(maxRadius, abs(point)))
+          case Some(point) => calculate(pointsLeft - 1, points += point, math.max(maxRadius, DLALib.abs(point)))
           case None => calculate(pointsLeft, points, maxRadius)
         }
       }
     }
 
-    calculate(numTotalPoints, Set() ++ initial, initial.map(abs(_)).max)
+    calculate(numTotalPoints, Set() ++ initial, initial.map(DLALib.abs(_)).max)
   }
 }
 
