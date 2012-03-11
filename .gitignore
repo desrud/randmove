@@ -5,3 +5,4 @@ target
 .cache
 lib_managed
 project/boot
+bin/
