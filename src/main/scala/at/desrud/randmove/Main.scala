@@ -14,7 +14,7 @@ object Main {
     val numFiles = (if (args.length > 1) tryParseInt(args(1)) else None).getOrElse(DEFAULT_NUM_FILES)
 
     println("processing " + numIterations + " iterations, generating " + numFiles + " snapshot files")
-    Executor.doAll(numIterations, numFiles)
+    Executor.generateAnimation(numIterations, numFiles)
   }
 
   def tryParseInt(x: String) = {
@@ -103,9 +103,9 @@ object Executor {
   var PLOT_SIZE = 200
   var OUTPUT_DIR = "/tmp/"
 
-  def doAll(n: Int) = FileLib.printPoints(PROCESSOR.process(n), OUTPUT_DIR + "file" + n)
+  def generateDLA(n: Int) = FileLib.printPoints(PROCESSOR.process(n), OUTPUT_DIR + "file" + n)
 
-  def doAll(numIterations: Int, numSnapshots: Int, init: Set[(Int, Int)] = Set((0, 0))) {
+  def generateAnimation(numIterations: Int, numSnapshots: Int, init: Set[(Int, Int)] = Set((0, 0))) {
     val stepSize = numIterations / numSnapshots
     val targetFilesNames = for (i <- 1 to numSnapshots) yield OUTPUT_DIR + "file" + "%05d".format(i)
 
